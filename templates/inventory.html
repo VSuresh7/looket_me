@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LOOKET ME Mens & Kid's Wear - Inventory Ingestion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function filterInventoryTable() {
+            let input = document.getElementById("inventory_search_input").value.toLowerCase().trim();
+            let table = document.getElementById("inventory_table_body");
+            let rows = table.getElementsByClassName("product-row");
+            let noResultRow = document.getElementById("inventory_no_result");
+            let matchCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                let barcode = row.cells[0].innerText.toLowerCase();
+                let productDesc = row.cells[1].innerText.toLowerCase();
+                
+                if (barcode.includes(input) || productDesc.includes(input)) {
+                    row.style.display = "";
+                    matchCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            }
+
+            if (matchCount === 0) {
+                noResultRow.style.display = "";
+            } else {
+                noResultRow.style.display = "none";
+            }
+        }
+    </script>
+    <style>
+        /* Global Brand Rules matching Logo Guidelines */
+        body {
+            background-color: #0b1d16; /* Theme deep forest green background */
+            color: #f3e5ab; /* Theme cream/champagne typography */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #07130f; /* Dark silhouette slate-green */
+            padding: 30px 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            border-right: 1px solid #d4af37; /* Clean Gold Divider border line */
+        }
+
+        .sidebar h2 {
+            color: #d4af37;
+            text-align: center;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f3e5ab;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background: #142d24;
+            color: #ffffff;
+            border-left: 4px solid #d4af37;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px;
+            background: #0b1d16;
+        }
+
+        h1 {
+            color: #d4af37; /* Pure Gold brand accent text */
+            font-size: 2.2rem;
+            margin-top: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #142d24;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        /* Form Layout & Form Elements */
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .form-row input, .form-row select {
+            flex: 1;
+            min-width: 180px;
+            background: #07130f;
+            border: 1px solid #234437;
+            color: #ffffff;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-row input:focus, .form-row select:focus {
+            border-color: #d4af37;
+        }
+
+        .form-row select option {
+            background: #07130f;
+            color: #ffffff;
+        }
+
+        /* Inventory Action Button */
+        .btn-submit {
+            background: #d4af37;
+            color: #07130f;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #f3e5ab;
+        }
+
+        /* Search input specific tuning */
+        #inventory_search_input {
+            width: 100%;
+            max-width: 350px;
+            background: #07130f;
+            border: 1px solid #234437;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #inventory_search_input:focus {
+            border-color: #d4af37;
+        }
+
+        /* Premium Content Previews Table rules */
+        .preview-box {
+            background: #142d24;
+            border-radius: 8px;
+            border: 1px solid #234437;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        table th {
+            background: #07130f !important;
+            color: #d4af37 !important;
+            padding: 14px 10px;
+            border: 1px solid #234437 !important;
+            font-size: 0.95rem;
+        }
+
+        table td {
+            border: 1px solid #234437 !important;
+            padding: 12px 10px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div style="text-align: center;">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Looket Me Logo" style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid #d4af37; object-fit: cover;">
+    </div>
+    <h2>LOOKET ME</h2>
+    <a href="/">Dashboard</a>
+    <a href="/inventory">Inventory</a>
+    <a href="/billing">Billing</a>
+    <a href="/customers">Customers</a>
+    <a href="/reports">Reports</a>
+    <a href="/settings">Settings</a>
+    <a href="/logout" style="background: #5c1d1d; margin-top: 50px; text-align: center; border: 1px solid #ef4444;">Logout</a>
+</div>
+
+<div class="content">
+    {% if global_stock_alert %}
+    <div class="alert-box" style="background-color: #7f1d1d; border-color: #ef4444; color: #fee2e2; font-weight: bold; font-size: 1.1rem; margin-bottom: 25px; padding: 15px; border-radius: 8px;">
+        {{ global_stock_alert }}
+    </div>
+    {% endif %}
+
+    <h1>Stock Registry Intake</h1>
+
+    <form action="/add_product" method="POST" style="background: #142d24; padding: 25px; border-radius: 8px; border: 1px solid #234437; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 30px;">
+        <div class="form-row">
+            <input type="text" name="barcode" placeholder="Scan/Type Barcode" required autocomplete="off">
+            <input type="text" name="product_name" placeholder="Product Name Description" required autocomplete="off">
+            <select name="category" required>
+                <option value="" disabled selected>Select Segment Category</option>
+                <option value="Shirt">Shirt</option>
+                <option value="kid's Shirt">kid's Shirt</option>
+                <option value="T-Shirt">T-Shirt</option>
+                <option value="kid's T-Shirt">kid's T-Shirt</option>
+                <option value="Jeans">Jeans</option>
+                <option value="kid's Jeans">kid's Jeans</option>
+                <option value="Trouser">Trouser</option>
+                <option value="kid's Trouser">kid's Trouser</option>
+                <option value="Kurta">Kurta</option>
+                <option value="kid's Kurta">kid's Kurta</option>
+                <option value="Jacket">Jacket</option>
+                <option value="kid's Jacket">kid's Jacket</option>  
+            </select>
+        </div>
+
+        <div class="form-row">
+            <input type="number" step="0.01" name="purchase_price" placeholder="Cost Price Wholesale (₹)" required>
+            <input type="number" step="0.01" name="sale_price" placeholder="Retail Sale Price (₹)" required>
+            <select name="incoming_size" required>
+                <option value="" disabled selected>Assigned Size tag</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+                <option value="XXL">XXL</option>
+            </select>
+            <input type="number" name="incoming_qty" placeholder="Quantity Count Intake" min="1" required>
+        </div>
+
+        <button type="submit" class="btn-submit" style="margin-top: 5px;">Update Stock Registry</button>
+    </form>
+
+    <hr style="border: 0; height: 1px; background: #234437; margin: 40px 0;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;">
+        <h2>Current Stock Ledgers</h2>
+        <input type="text" id="inventory_search_input" oninput="filterInventoryTable()" placeholder="🔍 Search by Name, Barcode or Sizes..." autocomplete="off">
+    </div>
+
+    <div class="preview-box" style="padding: 10px; overflow-x: auto;">
+        <table style="width:100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr>
+                    <th>Barcode</th>
+                    <th>Product Name</th>
+                    <th>XS</th>
+                    <th>S</th>
+                    <th>M</th>
+                    <th>L</th>
+                    <th>XL</th>
+                    <th>XXL</th>
+                    <th style="color:#d4af37;">Total Pieces</th>
+                </tr>
+            </thead>
+            <tbody id="inventory_table_body">
+                {% if products %}
+                    {% for p in products %}
+                    <tr class="product-row" style="transition: background 0.2s;" onmouseover="this.style.background='#1c3d31'" onmouseout="this.style.background='transparent'">
+                        <td style="color:#ffffff; font-family: monospace;">{{ p.barcode }}</td>
+                        <td style="color:#ffffff; font-weight: 500;">{{ p.product_name }} <span style="color: #a1a1aa; font-size: 0.85rem; font-weight: normal;">({{p.category}})</span></td>
+                        <td style="color:#f3e5ab;">{{ p.XS if p.XS is defined else p.xs if p.xs is defined else 0 }}</td>
+                        <td style="color:#f3e5ab;">{{ p.S if p.S is defined else p.s if p.s is defined else 0 }}</td>
+                        <td style="color:#f3e5ab;">{{ p.M if p.M is defined else p.m if p.m is defined else 0 }}</td>
+                        <td style="color:#f3e5ab;">{{ p.L if p.L is defined else p.l if p.l is defined else 0 }}</td>
+                        <td style="color:#f3e5ab;">{{ p.XL if p.XL is defined else p.xl if p.xl is defined else 0 }}</td>
+                        <td style="color:#f3e5ab;">{{ p.XXL if p.XXL is defined else p.xxl if p.xxl is defined else 0 }}</td>
+                        <td style="font-weight:bold; color:#d4af37;">{{ p.total_quantity }} pcs</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align:center; padding:30px; color:#a1a1aa;">No products inside active inventory databases.</td>
+                    </tr>
+                {% endif %}
+                <tr id="inventory_no_result" style="display: none; background: transparent !important;">
+                    <td colspan="9" style="text-align: center; padding: 30px; color: #ef4444; font-weight: bold;">
+                        ⚠️ No matching structural records found!
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    display:flex;
+    background:#111827;
+    color:white;
+}
+
+.sidebar{
+    width:250px;
+    height:100vh;
+    background:#1f2937;
+    padding:20px;
+}
+
+.sidebar h2{
+    margin-bottom:30px;
+    color:#f97316;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:8px;
+}
+
+.sidebar a:hover{
+    background:#374151;
+}
+
+.content{
+    flex:1;
+    padding:30px;
+}
+
+.content h1{
+    margin-bottom:30px;
+}
+
+.card{
+    background:#1f2937;
+    width:250px;
+    padding:20px;
+    border-radius:12px;
+    display:inline-block;
+    margin-right:20px;
+    margin-bottom:20px;
+    box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+
+.card h2{
+    margin-bottom:10px;
+    color:#f97316;
+}
+
+.card p{
+    font-size:30px;
+    font-weight:bold;
+}
+
+input,
+select{
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+}
+
+.btn{
+    background:#f97316;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+/* ==========================================
+   COMPACT WHATSAPP CHECKOUT BUTTON
+   ========================================== */
+.preview-box .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 220px;       /* Shrinks button from full-width to compact size */
+    padding: 8px 16px;      /* Reduces padding inside the element container */
+    font-size: 0.85rem;     /* Refines typography text tracking values scale */
+    margin: 15px auto 0 auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Centers the button align alignment structure container div */
+.preview-box div[style*="text-align: center;"] {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}

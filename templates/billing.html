@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LOOKET Mens & Kid's Wear - Billing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        let typingTimer;
+        const doneTypingInterval = 300;
+        let cart = []; 
+
+        function startTypingCountdown() {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(fetchProductDetails, doneTypingInterval);
+        }
+
+        function fetchProductDetails() {
+            let barcode = document.getElementById("barcode_input").value.trim(); 
+            let select = document.getElementById("size_sold_select");
+            
+            if (!barcode) {
+                if (select) select.innerHTML = '<option value="" disabled selected>Select Size Variant</option>';
+                return;
+            }
+            
+            fetch('/api/get_product?barcode=' + encodeURIComponent(barcode) + '&_=' + new Date().getTime())
+                .then(response => response.json())
+                .then(data => {
+                    if (!select) return;
+                    select.innerHTML = '<option value="" disabled selected>Select Size Variant</option>';
+                    
+                    if (data.error) {
+                        return;
+                    }
+                    
+                    document.getElementById("barcode_input").setAttribute("data-name", data.product_name || "Apparel");
+                    let sizes = ["XS", "S", "M", "L", "XL", "XXL"];
+                    let matchFound = 0;
+
+                    sizes.forEach(s => {
+                        let stockLeft = data[s] !== undefined ? parseInt(data[s]) : 0;
+                        if (stockLeft > 0) {
+                            let uniqueSizePrice = data.size_prices && data.size_prices[s] ? data.size_prices[s] : 0;
+                            let opt = document.createElement("option");
+                            opt.value = s;
+                            opt.setAttribute("data-price", uniqueSizePrice);
+                            opt.innerText = s + " (" + stockLeft + " left) - ₹" + uniqueSizePrice;
+                            select.appendChild(opt);
+                            matchFound++;
+                        }
+                    });
+                });
+        }
+
+        function addItemToCart() {
+            let barcodeInput = document.getElementById("barcode_input");
+            let barcode = barcodeInput.value.trim();
+            let pName = barcodeInput.getAttribute("data-name") || "Apparel Item";
+            let qtyInput = document.getElementById("qty_input");
+            let qty = parseInt(qtyInput.value) || 0;
+            let select = document.getElementById("size_sold_select");
+            
+            if (!barcode || qty <= 0 || select.selectedIndex <= 0) {
+                alert("Scan barcode, select size, and enter valid quantity!");
+                return;
+            }
+            
+            let option = select.options[select.selectedIndex];
+            let size = option.value;
+            let rate = parseFloat(option.getAttribute("data-price")) || 0;
+            
+            let total = rate * qty;
+            let discVal = parseFloat(document.getElementById("discount_input").value) || 0;
+            let discType = document.getElementById("discount_type").value;
+            
+            let finalDiscount = (discType === "percentage") ? (total * (discVal / 100)) : discVal;
+            let finalPayable = Math.max(0, total - finalDiscount);
+            
+            cart.push({
+                barcode: barcode,
+                product_name: pName,
+                size_sold: size,
+                quantity: qty,
+                rate: rate,
+                discount: finalDiscount,
+                final_price: finalPayable
+            });
+            
+            barcodeInput.value = "";
+            qtyInput.value = "";
+            select.innerHTML = '<option value="" disabled selected>Select Size Variant</option>';
+            document.getElementById("discount_input").value = "0";
+            
+            renderCartTable();
+        }
+
+        function removeCartItem(index) {
+            cart.splice(index, 1);
+            renderCartTable();
+        }
+
+        function renderCartTable() {
+            let tbody = document.getElementById("cart_table_body");
+            tbody.innerHTML = "";
+            
+            if (cart.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#a1a1aa;">No products inside temporary checkout queue.</td></tr>';
+                document.getElementById("cart_data_field").value = "";
+                return;
+            }
+            
+            cart.forEach((item, index) => {
+                let row = `<tr>
+                    <td style="padding:12px 10px; color:#ffffff;">${item.barcode}</td>
+                    <td style="padding:12px 10px; color:#ffffff;">${item.product_name} [${item.size_sold}]</td>
+                    <td style="padding:12px 10px; color:#f3e5ab;">₹${item.rate.toFixed(2)}</td>
+                    <td style="padding:12px 10px; color:#ffffff;">${item.quantity}</td>
+                    <td style="padding:12px 10px; color:#d4af37; font-weight:bold;">₹${item.final_price.toFixed(2)}</td>
+                    <td style="padding:12px 10px;">
+                        <button type="button" style="background:#5c1d1d; color:#ffffff; border:1px solid #ef4444; padding:6px 10px; font-size:0.8rem; border-radius:4px; cursor:pointer;" onclick="removeCartItem(${index})">❌</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+            
+            document.getElementById("cart_data_field").value = JSON.stringify(cart);
+        }
+
+        function validateFormSubmit(e) {
+            document.getElementById("cart_data_field").value = JSON.stringify(cart);
+            if (cart.length === 0) {
+                alert("Your shopping cart is empty!");
+                return false;
+            }
+            return true;
+        }
+    </script>
+    <style>
+        /* Global Brand Rules matching Logo Guidelines */
+        body {
+            background-color: #0b1d16; /* Theme deep forest green background */
+            color: #f3e5ab; /* Theme cream/champagne typography */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #07130f; /* Dark silhouette slate-green */
+            padding: 30px 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            border-right: 1px solid #d4af37; /* Clean Gold Divider border line */
+        }
+
+        .sidebar h2 {
+            color: #d4af37;
+            text-align: center;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f3e5ab;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background: #142d24;
+            color: #ffffff;
+            border-left: 4px solid #d4af37;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px;
+            background: #0b1d16;
+        }
+
+        h1 {
+            color: #d4af37; /* Pure Gold brand accent text */
+            font-size: 2.2rem;
+            margin-top: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #142d24;
+            padding-bottom: 10px;
+        }
+
+        /* Input Form Elements styling enhancements */
+        input[type="text"], input[type="number"], select {
+            background: #07130f;
+            border: 1px solid #234437;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: #d4af37;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-row input, .form-row select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        table th {
+            background: #07130f !important;
+            color: #d4af37 !important;
+            padding: 12px 10px;
+            border: 1px solid #234437 !important;
+        }
+
+        table td {
+            border: 1px solid #234437 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div style="text-align: center;">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Looket Me Logo" style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid #d4af37; object-fit: cover;">
+    </div>
+    <h2>LOOKET ME</h2>
+    <a href="/">Dashboard</a>
+    <a href="/inventory">Inventory</a>
+    <a href="/billing">Billing</a>
+    <a href="/customers">Customers</a>
+    <a href="/reports">Reports</a>
+    <a href="/settings">Settings</a>
+    <a href="/logout" style="background: #5c1d1d; margin-top: 50px; text-align: center; border: 1px solid #ef4444;">Logout</a>
+</div>
+
+<div class="content">
+    {% if global_stock_alert %}
+    <div class="alert-box" style="background-color: #7f1d1d; border-color: #ef4444; color: #fee2e2; font-weight: bold; margin-bottom: 25px; padding: 15px; border-radius: 8px;">
+        {{ global_stock_alert }}
+    </div>
+    {% endif %}
+
+    <h1>Create Multi-Item Bill</h1>
+
+    {% if error_msg %}
+    <div class="alert-box" style="background-color: #7f1d1d; border-color: #ef4444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-weight: bold;">{{ error_msg }}</div>
+    {% endif %}
+
+    <form action="/billing" method="POST" onsubmit="return validateFormSubmit(event)">
+        
+        <div class="form-row" style="margin-bottom:20px;">
+            <input type="text" name="customer_name" placeholder="Customer Name" required>
+            <input type="text" name="customer_phone" placeholder="Mobile Number" required>
+        </div>
+
+        <div style="background: #142d24; padding: 25px; border-radius: 8px; border: 1px solid #234437; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+            <h3 style="color:#d4af37; margin-top:0; margin-bottom:15px;">Add Apparel Item</h3>
+            <div class="form-row">
+                <input type="text" id="barcode_input" placeholder="Scan/Type Barcode" oninput="startTypingCountdown()" autocomplete="off">
+                <input type="number" id="qty_input" placeholder="Quantity" min="1">
+                <select id="size_sold_select">
+                    <option value="" disabled selected>Select Size Variant</option>
+                </select>
+            </div>
+
+            <div class="form-row" style="background: #07130f; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #234437;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size:0.85rem; color:#a1a1aa; font-weight: bold;">Discount Type</label>
+                    <select id="discount_type" style="background: #142d24;">
+                        <option value="fixed">Fixed Amount (₹)</option>
+                        <option value="percentage">Percentage (%)</option>
+                    </select>
+                </div>
+                <div style="flex: 2; display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size:0.85rem; color:#a1a1aa; font-weight: bold;">Discount Value</label>
+                    <input type="number" id="discount_input" value="0" min="0" style="background: #142d24;">
+                </div>
+            </div>
+            <button type="button" style="margin-top:20px; background:#d4af37; color:#07130f; border:none; padding:12px 20px; font-weight:bold; border-radius:6px; cursor:pointer; font-size:0.95rem; transition: background 0.2s;" onmouseover="this.style.background='#f3e5ab'" onmouseout="this.style.background='#d4af37'" onclick="addItemToCart()">➕ Add Item to List</button>
+        </div>
+
+        <input type="hidden" id="cart_data_field" name="cart_data">
+
+        <div style="padding: 10px; overflow-x: auto; margin-bottom: 25px; background:#142d24; border: 1px solid #234437; border-radius:8px;">
+            <table style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr>
+                        <th style="padding:12px 10px;">Barcode</th>
+                        <th style="padding:12px 10px;">Description</th>
+                        <th style="padding:12px 10px;">Rate</th>
+                        <th style="padding:12px 10px;">Qty</th>
+                        <th style="padding:12px 10px;">Total</th>
+                        <th style="padding:12px 10px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="cart_table_body">
+                    <tr>
+                        <td colspan="6" style="text-align:center; padding:20px; color:#a1a1aa;">No products inside temporary checkout queue.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" style="margin-bottom:35px; background:#10b981; color:#ffffff; border:none; border-radius:8px; font-size:1.1rem; height:48px; width:100%; cursor:pointer; font-weight:bold; box-shadow:0 4px 12px rgba(16, 185, 129, 0.2);">🧾 Generate Single Bill</button>
+    </form>
+
+    <hr style="border: 0; height: 1px; background: #234437; margin: 40px 0;">
+
+    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; margin-top: 30px; align-items: start;">
+        
+        <div style="background: #142d24; border: 1px solid #234437; border-radius: 12px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);">
+            <h3 style="text-align: center; margin-top: 0; font-size: 1.3rem; letter-spacing: 0.05em; color: #d4af37;">LOOKET ME RECEIPT</h3>
+        
+            {% if receipt_data %}
+                <div style="background: #07130f; border: 1px solid #234437; border-radius: 8px; padding: 20px; color: #f3e5ab; font-family: monospace; line-height: 1.5; font-size: 0.95rem; margin-bottom: 20px;">
+                    <div style="text-align: center; font-weight: bold; margin-bottom: 5px; font-size: 1.2rem; color: #d4af37; letter-spacing:1px;">LOOKET ME</div>
+                    <div style="text-align: center; font-size:0.8rem; color:#a1a1aa; margin-bottom: 5px;">MEN'S & KID'S WEAR</div>
+                    <div style="text-align: center; margin-bottom: 15px;">Retail Invoice Summary</div>
+                    <hr style="border: none; border-top: 1px dashed #234437; margin: 10px 0;">
+                    
+                    <p style="margin: 4px 0;"><strong>Bill No:</strong> #{{ receipt_data.invoice_id }}</p>
+                    <p style="margin: 4px 0;"><strong>Date:</strong> {{ receipt_data.date }}</p>
+                    <hr style="border: none; border-top: 1px dashed #234437; margin: 10px 0;">
+                    
+                    <div style="margin: 10px 0; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; border-bottom: 1px solid #234437; padding-bottom: 6px; color:#d4af37;">
+                        <span>Item Name</span>
+                        <span style="text-align: center;">Qty</span>
+                        <span style="text-align: right;">Rate</span>
+                        <span style="text-align: right;">Amount</span>
+                    </div>
+
+                    {% for item in receipt_data.items() %}
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; margin: 8px 0;">
+                        <span style="color: #ffffff;">{{ item.product_name }}-{{ item.size_sold }}</span>
+                        <span style="text-align: center;">{{ item.quantity }}</span>
+                        <span style="text-align: right;">{{ item.rate }}</span>
+                        <span style="text-align: right; color: #d4af37; font-weight: bold;">{{ item.final_price }}</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <hr style="border: none; border-top: 1px dashed #234437; margin: 15px 0;">
+                    <p style="margin: 4px 0; display: flex; justify-content: space-between;"><span>Gross Total:</span> <span>₹{{ receipt_data.gross_total }}</span></p>
+                    <p style="margin: 4px 0; display: flex; justify-content: space-between; color: #ef4444;"><span>Discount Savings:</span> <span>-₹{{ receipt_data.total_discount }}</span></p>
+                    <hr style="border: none; border-top: 1px dashed #234437; margin: 10px 0;">
+                    <p style="margin: 4px 0; display: flex; justify-content: space-between; font-size: 1.2rem; color: #10b981; font-weight: bold;">
+                        <span>TOTAL PAID:</span> <span>₹{{ receipt_data.final_payable }}</span>
+                    </p>
+                    <hr style="border: none; border-top: 1px dashed #234437; margin: 15px 0;">
+                    
+                    <p style="margin: 4px 0;"><strong>Customer:</strong> {{ receipt_data.customer_name }}</p>
+                    <p style="margin: 4px 0;"><strong>Mobile:</strong> {{ receipt_data.customer_phone }}</p>
+                </div>
+                
+                {% if whatsapp_url %}
+                <div style="margin-top: 20px;">
+                    <a href="{{ whatsapp_url }}" target="_blank" style="background: #25d366; display: flex; align-items: center; justify-content: center; width: 100%; height: 50px; text-decoration: none; border-radius: 8px; font-weight: bold; color: #ffffff; font-size: 1.05rem; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); transition: transform 0.2s;">
+                        Send Invoice Receipt via WhatsApp Chat
+                    </a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; color: #a1a1aa; padding: 50px 0; font-size: 0.95rem;">
+                     📑 Add retail articles above and click generate to process the custom layout receipt view...
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="background: #142d24; border: 1px solid #234437; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);">
+            <h4 style="color: #d4af37; margin-top: 0; font-size: 1.1rem; margin-bottom: 15px; letter-spacing: 0.5px;">UPI QR Code Payment</h4>
+            <div style="background: white; padding: 14px; display: inline-block; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+                <div style="width: 150px; height: 150px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #07130f; font-weight: bold; font-family: monospace;">[ QR CODE ]</div>
+            </div>
+            <p style="margin: 4px 0; color: #ffffff; font-weight: 600;">Merchant Account: {{ shop_owner }}</p>
+            <p style="margin: 4px 0; color: #d4af37; font-family: monospace; font-size: 0.9rem;">UPI ID: {{ upi_id }}</p>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

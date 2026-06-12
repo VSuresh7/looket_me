@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LOOKET Mens & Kid's Wear - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function filterMatrixList() {
+            let input = document.getElementById("matrix_search_input").value.toLowerCase().trim();
+            let container = document.getElementById("matrix_scroll_box");
+            let items = container.getElementsByClassName("matrix-item");
+            let fallbackAlert = document.getElementById("matrix_no_result");
+            let matchCount = 0;
+
+            for (let i = 0; i < items.length; i++) {
+                let text = items[i].innerText.toLowerCase();
+                if (text.includes(input)) {
+                    items[i].style.display = "";
+                    matchCount++;
+                } else {
+                    items[i].style.display = "none";
+                }
+            }
+
+            if (matchCount === 0) {
+                fallbackAlert.style.display = "block";
+            } else {
+                fallbackAlert.style.display = "none";
+            }
+        }
+    </script>
+    <style>
+        /* Embedded CSS to guarantee the dark-emerald and gold theme applies perfectly */
+        body {
+            background-color: #0b1d16; /* Deep logo background green */
+            color: #f3e5ab; /* Soft gold/cream prose text */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #07130f; /* Extra dark green for depth */
+            padding: 30px 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            border-right: 1px solid #d4af37; /* Metallic gold boundary accent */
+        }
+
+        .sidebar h2 {
+            color: #d4af37;
+            text-align: center;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f3e5ab;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background: #142d24;
+            color: #ffffff;
+            border-left: 4px solid #d4af37;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px;
+            background: #0b1d16;
+        }
+
+        h1 {
+            color: #d4af37; /* Classic Gold branding */
+            font-size: 2.2rem;
+            margin-top: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #142d24;
+            padding-bottom: 10px;
+        }
+
+        .card {
+            flex: 1;
+            background: #142d24; /* Muted corporate green cards */
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #234437;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .preview-box {
+            background: #142d24;
+            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid #234437;
+        }
+
+        table th {
+            background: #07130f !important;
+            color: #d4af37 !important;
+        }
+
+        table td, table th {
+            border: 1px solid #234437 !important;
+        }
+
+        .matrix-item {
+            border-bottom: 1px solid #234437 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div style="text-align: center;">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Looket Me Logo" style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid #d4af37; object-fit: cover;">
+    </div>
+    <h2>LOOKET ME</h2>
+    <a href="/">Dashboard</a>
+    <a href="/inventory">Inventory</a>
+    <a href="/billing">Billing</a>
+    <a href="/customers">Customers</a>
+    <a href="/reports">Reports</a>
+    <a href="/settings">Settings</a>
+    <a href="/logout" style="background: #5c1d1d; margin-top: 50px; text-align: center; border: 1px solid #ef4444;">Logout</a>
+</div>
+
+<div class="content">
+    {% if global_stock_alert %}
+    <div class="alert-box" style="background-color: #7f1d1d; border-color: #ef4444; color: #fee2e2; font-weight: bold; font-size: 1.1rem; margin-bottom: 25px; padding: 15px; border-radius: 8px;">
+        {{ global_stock_alert }}
+    </div>
+    {% endif %}
+
+    <h1>Business Analytics Dashboard</h1>
+
+    <div class="card-container" style="display: flex; gap: 20px; margin-bottom: 30px;">
+        <div class="card">
+            <h3 style="color: #a1a1aa; margin-top: 0; font-size: 0.95rem; uppercase; letter-spacing: 0.5px;">Current Inventory Items</h3>
+            <h2 style="font-size: 2.2rem; margin: 10px 0; color: #d4af37;">{{ total_current_stock }} Items</h2>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #a1a1aa; margin-top: 0; font-size: 0.95rem; uppercase; letter-spacing: 0.5px;">Inventory Cost</h3>
+            <h2 style="font-size: 2.2rem; margin: 10px 0; color: #d4af37;">₹{{ total_investment_value }}</h2>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #a1a1aa; margin-top: 0; font-size: 0.95rem; uppercase; letter-spacing: 0.5px;">Gross Revenue</h3>
+            <h2 style="font-size: 2.2rem; margin: 10px 0; color: #d4af37;">₹{{ total_sales_revenue }}</h2>
+        </div>
+    </div>
+
+    <hr style="border: 0; height: 1px; background: #234437; margin: 40px 0;">
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="preview-box" style="flex: 1; min-width: 300px;">
+            <h3 style="color: #d4af37; margin-top: 0; margin-bottom: 15px;">Stock Segment Summary</h3>
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr>
+                        <th style="padding: 12px 10px;">Category</th>
+                        <th style="padding: 12px 10px;">Quantity Left</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat, count in category_counts.items() %}
+                    <tr style="transition: background 0.2s;" onmouseover="this.style.background='#1c3d31'" onmouseout="this.style.background='transparent'">
+                        <td style="padding: 12px 10px; color: #ffffff;">{{ cat }}</td>
+                        <td style="padding: 12px 10px; color: #f3e5ab; font-weight: bold;">{{ count }} pcs</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="preview-box" style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px;">
+                <h3 style="color: #d4af37; margin: 0;">Active Stock Sizing Matrix</h3>
+                <input type="text" id="matrix_search_input" oninput="filterMatrixList()" placeholder="🔍 Quick filter..." style="max-width: 180px; background: #07130f; border: 1px solid #d4af37; padding: 6px 12px; border-radius: 6px; color: white; font-size: 0.85rem;">
+            </div>
+            
+            <div id="matrix_scroll_box" style="max-height: 250px; overflow-y: auto;">
+                {% for p_identity, sizes_text in size_avail_matrix.items() %}
+                <div class="matrix-item" style="padding: 12px 10px; font-size: 0.9rem;">
+                    <strong style="color: #ffffff;">{{ p_identity }}:</strong> <span style="color: #f3e5ab;">{{ sizes_text }}</span>
+                </div>
+                {% endfor %}
+                
+                <div id="matrix_no_result" style="display: none; padding: 20px; text-align: center; color: #ef4444; font-weight: bold; font-size: 0.9rem;">
+                    ⚠️ No structural records match!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

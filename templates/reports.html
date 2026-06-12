@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LOOKET ME Mens & Kid's Wear - Sales Reports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Global Brand Rules matching Logo Guidelines */
+        body {
+            background-color: #0b1d16; /* Theme deep forest green background */
+            color: #f3e5ab; /* Theme cream/champagne typography */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #07130f; /* Dark silhouette slate-green */
+            padding: 30px 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            border-right: 1px solid #d4af37; /* Clean Gold Divider border line */
+        }
+
+        .sidebar h2 {
+            color: #d4af37;
+            text-align: center;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f3e5ab;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background: #142d24;
+            color: #ffffff;
+            border-left: 4px solid #d4af37;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px;
+            background: #0b1d16;
+        }
+
+        h1 {
+            color: #d4af37; /* Pure Gold brand accent text */
+            font-size: 2.2rem;
+            margin-top: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #142d24;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Flexbox Row for Summary Cards Alignment */
+        .summary-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        /* Upgraded Luxury Retail Dashboard Analytics Cards */
+        .card {
+            flex: 1;
+            min-width: 250px;
+            background: #142d24;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #234437;
+            border-left: 5px solid #d4af37; /* Solid Gold accent block */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #a1a1aa;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 10px 0;
+        }
+
+        .card p {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 0;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div style="text-align: center;">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Looket Me Logo" style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid #d4af37; object-fit: cover;">
+    </div>
+    <h2>LOOKET ME</h2>
+    <a href="/">Dashboard</a>
+    <a href="/inventory">Inventory</a>
+    <a href="/billing">Billing</a>
+    <a href="/customers">Customers</a>
+    <a href="/reports">Reports</a>
+    <a href="/settings">Settings</a>
+    <a href="/logout" style="background: #5c1d1d; margin-top: 50px; text-align: center; border: 1px solid #ef4444;">Logout</a>
+</div>
+
+<div class="content">
+    {% if global_stock_alert %}
+    <div class="alert-box" style="background-color: #7f1d1d; border-color: #ef4444; color: #fee2e2; font-weight: bold; font-size: 1.1rem; margin-bottom: 25px; padding: 15px; border-radius: 8px;">
+        {{ global_stock_alert }}
+    </div>
+    {% endif %}
+
+    <h1>Sales Reports</h1>
+
+    <h2>Revenue & Performance Overview</h2>
+    <div class="summary-row">
+        <div class="card" style="border-left-color: #d4af37;">
+            <h2>Today's Sales</h2>
+            <p>₹{{ today_sales }}</p>
+        </div>
+        <div class="card" style="border-left-color: #f3e5ab;">
+            <h2>Monthly Sales</h2>
+            <p>₹{{ monthly_sales }}</p>
+        </div>
+    </div>
+
+    <hr style="border: 0; height: 1px; background: #234437; margin: 40px 0;">
+
+    <h2>Investment & Profit Margin Accounts</h2>
+    <div class="summary-row">
+        <div class="card" style="border-left-color: #a1a1aa;">
+            <h2>Store Spends (Inventory Cost)</h2>
+            <p style="color: #f3e5ab;">₹{{ total_spends }}</p>
+        </div>
+        <div class="card" style="border-left-color: #10b981;">
+            <h2>Total Profit</h2>
+            <p style="color: #10b981;">₹{{ total_profit }}</p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
